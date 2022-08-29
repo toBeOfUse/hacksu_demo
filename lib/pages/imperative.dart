@@ -144,9 +144,29 @@ class _CharacterSceneState extends State<CharacterScene> {
                               normalizedWeaponPosition!.dy.clamp(0, 1));
                         });
                       },
-                      child: Image.asset(
-                        "assets/aligned${currentWeapon.name}.png",
-                        filterQuality: FilterQuality.medium,
+                      child: AnimatedSwitcher(
+                        duration: Duration(milliseconds: 250),
+                        transitionBuilder:
+                            (Widget child, Animation<double> animation) {
+                          final offsetAnimation = Tween<Offset>(
+                            begin:
+                                Offset(Random().nextBool() ? -1.0 : 1.0, 0.0),
+                            end: Offset(0.0, 0.0),
+                          ).animate(
+                            animation,
+                          );
+                          return ClipRect(
+                            child: SlideTransition(
+                              position: offsetAnimation,
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: Image.asset(
+                          "assets/aligned${currentWeapon.name}.png",
+                          key: ValueKey(currentWeapon.name),
+                          filterQuality: FilterQuality.medium,
+                        ),
                       ),
                     ),
                   )
