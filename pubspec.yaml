@@ -61,7 +61,10 @@ flutter:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
   assets:
-    - assets/link.png
+    - assets/greenlink.png
+    - assets/redlink.png
+    - assets/bluelink.png
+    - assets/purplelink.png
     - assets/forest.jpg
     - assets/alignedboomerang.png
     - assets/alignedbow.png

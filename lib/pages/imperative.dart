@@ -1,6 +1,10 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
-enum Weapon { sword, boomerang, bow }
+enum WeaponOption { sword, boomerang, bow }
+
+enum ColorOption { green, blue, purple, red }
 
 class CharacterControl extends StatelessWidget {
   final String name;
@@ -30,8 +34,8 @@ class CharacterScene extends StatefulWidget {
 
 class _CharacterSceneState extends State<CharacterScene> {
   double characterHeight = 1.0;
-  Color color = Colors.green;
-  Weapon currentWeapon = Weapon.sword;
+  ColorOption color = ColorOption.green;
+  WeaponOption currentWeapon = WeaponOption.sword;
   Offset? normalizedWeaponPosition;
 
   static const initialCharacterFractionalHeight = 0.5;
@@ -52,6 +56,24 @@ class _CharacterSceneState extends State<CharacterScene> {
           mainAxisSize: MainAxisSize.min,
           children: [
             CharacterControl(
+              name: "Weapon",
+              controller: DropdownButton(
+                value: currentWeapon,
+                items: [
+                  for (final weapon in WeaponOption.values)
+                    DropdownMenuItem(value: weapon, child: Text(weapon.name))
+                ],
+                onChanged: (WeaponOption? newWeapon) {
+                  if (newWeapon != null) {
+                    setState(() {
+                      currentWeapon = newWeapon;
+                      normalizedWeaponPosition = null;
+                    });
+                  }
+                },
+              ),
+            ),
+            CharacterControl(
               name: "Height",
               controller: Slider(
                   value: characterHeight,
@@ -66,23 +88,23 @@ class _CharacterSceneState extends State<CharacterScene> {
                   }),
             ),
             CharacterControl(
-              name: "Weapon",
-              controller: DropdownButton(
-                value: currentWeapon,
-                items: [
-                  for (final weapon in Weapon.values)
-                    DropdownMenuItem(value: weapon, child: Text(weapon.name))
-                ],
-                onChanged: (Weapon? newWeapon) {
-                  if (newWeapon != null) {
-                    setState(() {
-                      currentWeapon = newWeapon;
-                      normalizedWeaponPosition = null;
-                    });
-                  }
-                },
-              ),
-            )
+                name: "Color",
+                controller: DropdownButton(
+                    value: color,
+                    items: [
+                      for (final colorOption in ColorOption.values)
+                        DropdownMenuItem(
+                          value: colorOption,
+                          child: Text(colorOption.name),
+                        )
+                    ],
+                    onChanged: (ColorOption? newValue) {
+                      if (newValue != null) {
+                        setState(() {
+                          color = newValue;
+                        });
+                      }
+                    }))
           ],
         ),
         Expanded(
@@ -127,7 +149,7 @@ class _CharacterSceneState extends State<CharacterScene> {
                     child: FractionallySizedBox(
                       heightFactor: characterFractionalHeight,
                       child: Image.asset(
-                        "assets/link.png",
+                        "assets/${color.name}link.png",
                         filterQuality: FilterQuality.medium,
                       ),
                     ),
