@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hacksu_demo/pages/imperative.dart';
 
 import "pages/helloworld.dart";
 import "pages/calculator.dart";
@@ -6,6 +7,7 @@ import "pages/calculator.dart";
 final pageIndex = {
   "Hello World": () => HelloWorld(),
   "Calculator": () => Calculator(),
+  "Imperative Rendering Demo": () => CharacterScene()
 };
 
 void main() {
