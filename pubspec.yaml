@@ -65,6 +65,8 @@ flutter:
     - assets/redlink.png
     - assets/bluelink.png
     - assets/purplelink.png
+    - assets/ears.png
+    - assets/blueears.png
     - assets/forest.jpg
     - assets/alignedboomerang.png
     - assets/alignedbow.png

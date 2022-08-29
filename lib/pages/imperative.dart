@@ -37,10 +37,11 @@ class _CharacterSceneState extends State<CharacterScene> {
   ColorOption color = ColorOption.green;
   WeaponOption currentWeapon = WeaponOption.sword;
   Offset? normalizedWeaponPosition;
+  bool ears = false;
 
   static const initialCharacterFractionalHeight = 0.5;
-  static const characterAspectRatio = 400 / 872;
-  static const weaponPosWithinCharacter = Offset(312 / 400, 478 / 872);
+  static const characterAspectRatio = 400 / 890;
+  static const weaponPosWithinCharacter = Offset(312 / 400, 496 / 890);
   static const originWithinWeapon = Offset(462 / 774, 227 / 737);
   static const weaponFractionalHeight = 0.2;
 
@@ -78,7 +79,7 @@ class _CharacterSceneState extends State<CharacterScene> {
               controller: Slider(
                   value: characterHeight,
                   min: 0.5,
-                  max: 1.5,
+                  max: 1.75,
                   onChanged: (newValue) {
                     setState(
                       () {
@@ -88,22 +89,34 @@ class _CharacterSceneState extends State<CharacterScene> {
                   }),
             ),
             CharacterControl(
-                name: "Color",
-                controller: DropdownButton(
-                    value: color,
-                    items: [
-                      for (final colorOption in ColorOption.values)
-                        DropdownMenuItem(
-                          value: colorOption,
-                          child: Text(colorOption.name),
-                        )
-                    ],
-                    onChanged: (ColorOption? newValue) {
-                      if (newValue != null) {
-                        setState(() {
-                          color = newValue;
-                        });
-                      }
+              name: "Color",
+              controller: DropdownButton(
+                  value: color,
+                  items: [
+                    for (final colorOption in ColorOption.values)
+                      DropdownMenuItem(
+                        value: colorOption,
+                        child: Text(colorOption.name),
+                      )
+                  ],
+                  onChanged: (ColorOption? newValue) {
+                    if (newValue != null) {
+                      setState(() {
+                        color = newValue;
+                      });
+                    }
+                  }),
+            ),
+            CharacterControl(
+                name: "The Cat Ears",
+                controller: Checkbox(
+                    value: ears,
+                    onChanged: (newValue) {
+                      setState(() {
+                        if (newValue != null) {
+                          ears = newValue;
+                        }
+                      });
                     }))
           ],
         ),
@@ -144,6 +157,19 @@ class _CharacterSceneState extends State<CharacterScene> {
                   Center(
                     child: Image.asset("assets/forest.jpg"),
                   ),
+                  if (ears)
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: FractionallySizedBox(
+                        heightFactor: characterFractionalHeight,
+                        child: Image.asset(
+                          color == ColorOption.blue
+                              ? "assets/blueears.png"
+                              : "assets/ears.png",
+                          filterQuality: FilterQuality.medium,
+                        ),
+                      ),
+                    ),
                   Align(
                     alignment: Alignment.bottomCenter,
                     child: FractionallySizedBox(
