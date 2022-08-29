@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hacksu_demo/pages/imperative.dart';
 
 import "pages/helloworld.dart";
 import "pages/calculator.dart";
@@ -37,19 +36,23 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(title: Text("HacKSU Demo")),
         body: pageIndex[currentPage]!(),
         drawer: Drawer(
-          child: ListView(
-            children: [
-              for (final page in pageIndex.keys)
-                ListTile(
+          child: Builder(builder: (context) {
+            return ListView(
+              children: [
+                for (final page in pageIndex.keys)
+                  ListTile(
                     title: Text(page),
                     selected: page == currentPage,
                     onTap: () {
                       setState(() {
                         currentPage = page;
                       });
-                    })
-            ],
-          ),
+                      Navigator.of(context).pop();
+                    },
+                  )
+              ],
+            );
+          }),
         ),
       ),
     );
