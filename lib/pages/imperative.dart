@@ -25,8 +25,45 @@ class CharacterControl extends StatelessWidget {
   }
 }
 
+class Explosion extends StatefulWidget {
+  const Explosion({Key? key}) : super(key: key);
+
+  @override
+  State<Explosion> createState() => _ExplosionState();
+}
+
+/// Needed to force the GIF to start over by evicting it from the cache after use
+/// https://github.com/flutter/flutter/issues/51775#issuecomment-680997795
+class _ExplosionState extends State<Explosion> {
+  AssetImage? explosion;
+  static const gifPath = "assets/explosion.gif";
+
+  @override
+  void initState() {
+    super.initState();
+    explosion = AssetImage(gifPath);
+  }
+
+  @override
+  void dispose() {
+    explosion?.evict();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Image(
+      image: explosion ?? AssetImage(gifPath),
+      filterQuality: FilterQuality.none,
+      fit: BoxFit.contain,
+    );
+  }
+}
+
 class CharacterScene extends StatefulWidget {
-  const CharacterScene({Key? key}) : super(key: key);
+  final bool simulatingImperative;
+  const CharacterScene({required this.simulatingImperative, Key? key})
+      : super(key: key);
 
   @override
   State<CharacterScene> createState() => _CharacterSceneState();
@@ -38,45 +75,70 @@ class _CharacterSceneState extends State<CharacterScene> {
   WeaponOption currentWeapon = WeaponOption.sword;
   Offset? normalizedWeaponPosition;
   bool ears = false;
+  bool exploding = false;
 
   static const initialCharacterFractionalHeight = 0.5;
   static const characterAspectRatio = 400 / 890;
   static const weaponPosWithinCharacter = Offset(312 / 400, 496 / 890);
   static const originWithinWeapon = Offset(462 / 774, 227 / 737);
   static const weaponFractionalHeight = 0.2;
+  static const explosionLengthMs = 1800;
 
   double get characterFractionalHeight {
     return initialCharacterFractionalHeight * characterHeight;
   }
 
+  void causeExplosion([void Function()? stateMutation]) async {
+    if (widget.simulatingImperative || exploding) {
+      return;
+    }
+    setState(() {
+      exploding = true;
+    });
+    await Future.delayed(
+        Duration(milliseconds: (explosionLengthMs / 2).round()));
+    if (stateMutation != null) {
+      setState(stateMutation);
+    }
+    await Future.delayed(
+        Duration(milliseconds: (explosionLengthMs / 2).round()));
+    setState(() {
+      exploding = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    bool isScreenWide = MediaQuery.of(context).size.width >= 800;
     return Column(
       children: [
-        Row(
+        Flex(
+          direction: isScreenWide ? Axis.horizontal : Axis.vertical,
+          crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            CharacterControl(
-              name: "Weapon",
-              controller: DropdownButton(
-                value: currentWeapon,
-                items: [
-                  for (final weapon in WeaponOption.values)
-                    DropdownMenuItem(value: weapon, child: Text(weapon.name))
-                ],
-                onChanged: (WeaponOption? newWeapon) {
-                  if (newWeapon != null) {
-                    setState(() {
-                      currentWeapon = newWeapon;
-                      normalizedWeaponPosition = null;
-                    });
-                  }
-                },
+            Row(mainAxisSize: MainAxisSize.min, children: [
+              CharacterControl(
+                name: "Weapon",
+                controller: DropdownButton(
+                  value: currentWeapon,
+                  items: [
+                    for (final weapon in WeaponOption.values)
+                      DropdownMenuItem(value: weapon, child: Text(weapon.name))
+                  ],
+                  onChanged: (WeaponOption? newWeapon) {
+                    if (newWeapon != null) {
+                      causeExplosion(() {
+                        currentWeapon = newWeapon;
+                        normalizedWeaponPosition = null;
+                      });
+                    }
+                  },
+                ),
               ),
-            ),
-            CharacterControl(
-              name: "Height",
-              controller: Slider(
+              CharacterControl(
+                name: "Height",
+                controller: Slider(
                   value: characterHeight,
                   min: 0.5,
                   max: 1.75,
@@ -86,43 +148,55 @@ class _CharacterSceneState extends State<CharacterScene> {
                         characterHeight = newValue;
                       },
                     );
-                  }),
-            ),
-            CharacterControl(
-              name: "Color",
-              controller: DropdownButton(
-                  value: color,
-                  items: [
-                    for (final colorOption in ColorOption.values)
-                      DropdownMenuItem(
-                        value: colorOption,
-                        child: Text(colorOption.name),
-                      )
-                  ],
-                  onChanged: (ColorOption? newValue) {
-                    if (newValue != null) {
-                      setState(() {
-                        color = newValue;
-                      });
-                    }
-                  }),
-            ),
-            CharacterControl(
-                name: "The Cat Ears",
-                controller: Checkbox(
-                    value: ears,
-                    onChanged: (newValue) {
-                      setState(() {
+                    causeExplosion();
+                  },
+                ),
+              ),
+            ]),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CharacterControl(
+                  name: "Color",
+                  controller: DropdownButton(
+                      value: color,
+                      items: [
+                        for (final colorOption in ColorOption.values)
+                          DropdownMenuItem(
+                            value: colorOption,
+                            child: Text(colorOption.name),
+                          )
+                      ],
+                      onChanged: (ColorOption? newValue) {
                         if (newValue != null) {
-                          ears = newValue;
+                          causeExplosion(() {
+                            color = newValue;
+                          });
                         }
-                      });
-                    }))
+                      }),
+                ),
+                CharacterControl(
+                  name: "The Cat Ears",
+                  controller: Checkbox(
+                      value: ears,
+                      onChanged: (newValue) {
+                        causeExplosion(() {
+                          if (newValue != null) {
+                            ears = newValue;
+                          }
+                        });
+                      }),
+                )
+              ],
+            ),
           ],
         ),
         Expanded(
           child: LayoutBuilder(
             builder: (context, constraints) {
+              // this is messy - if i was trying to develop a real positioning
+              // system I'd create like a `Sprite` class to store/calculate
+              // sizes and positions for all these different images
               final characterHeightPx =
                   characterFractionalHeight * constraints.maxHeight;
               final characterWidthPx = characterHeightPx * characterAspectRatio;
@@ -144,7 +218,8 @@ class _CharacterSceneState extends State<CharacterScene> {
                     weaponSizePx * originWithinWeapon.dy,
               );
               late final Offset actualWeaponPosPx;
-              if (normalizedWeaponPosition == null) {
+              if (normalizedWeaponPosition == null ||
+                  !widget.simulatingImperative) {
                 actualWeaponPosPx = defaultWeaponPosWithinCharacter;
                 normalizedWeaponPosition = actualWeaponPosPx.scale(
                     1 / constraints.maxWidth, 1 / constraints.maxHeight);
@@ -152,6 +227,11 @@ class _CharacterSceneState extends State<CharacterScene> {
                 actualWeaponPosPx = normalizedWeaponPosition!
                     .scale(constraints.maxWidth, constraints.maxHeight);
               }
+              final explosionHeight = constraints.maxHeight * 0.9;
+              final explosionTop = constraints.maxHeight * 0.1;
+              final explosionWidth = explosionHeight * (224 / 254);
+              final explosionLeft =
+                  constraints.maxWidth / 2 - explosionWidth / 2;
               return Stack(
                 children: [
                   Center(
@@ -186,6 +266,7 @@ class _CharacterSceneState extends State<CharacterScene> {
                     height: weaponSizePx,
                     child: GestureDetector(
                       onPanUpdate: (details) {
+                        if (!widget.simulatingImperative) return;
                         setState(() {
                           normalizedWeaponPosition = normalizedWeaponPosition! +
                               Offset(details.delta.dx / constraints.maxWidth,
@@ -196,7 +277,9 @@ class _CharacterSceneState extends State<CharacterScene> {
                         });
                       },
                       child: AnimatedSwitcher(
-                        duration: Duration(milliseconds: 250),
+                        duration: Duration(
+                          milliseconds: widget.simulatingImperative ? 250 : 0,
+                        ),
                         transitionBuilder:
                             (Widget child, Animation<double> animation) {
                           final offsetAnimation = Tween<Offset>(
@@ -220,7 +303,15 @@ class _CharacterSceneState extends State<CharacterScene> {
                         ),
                       ),
                     ),
-                  )
+                  ),
+                  if (exploding)
+                    Positioned(
+                      top: explosionTop,
+                      height: explosionHeight,
+                      width: explosionWidth,
+                      left: explosionLeft,
+                      child: Explosion(),
+                    )
                 ],
               );
             },

@@ -71,6 +71,7 @@ flutter:
     - assets/alignedboomerang.png
     - assets/alignedbow.png
     - assets/alignedsword.png
+    - assets/explosion.gif
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
