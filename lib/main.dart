@@ -7,7 +7,7 @@ import "pages/calculator.dart";
 final pageIndex = {
   "Hello World": () => HelloWorld(),
   "Calculator": () => Calculator(),
-  "Imperative Rendering Demo": () => CharacterScene()
+  "Imperative UI Simulator": () => CharacterScene()
 };
 
 void main() {
