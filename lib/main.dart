@@ -3,11 +3,17 @@ import 'package:hacksu_demo/pages/imperative.dart';
 
 import "pages/helloworld.dart";
 import "pages/calculator.dart";
+import "pages/imperative.dart";
 
 final pageIndex = {
   "Hello World": () => HelloWorld(),
   "Calculator": () => Calculator(),
-  "Imperative UI Simulator": () => CharacterScene()
+  "Imperative UI Simulator": () => CharacterScene(
+        simulatingImperative: true,
+      ),
+  "Declarative UI Simulator": () => CharacterScene(
+        simulatingImperative: false,
+      )
 };
 
 void main() {
