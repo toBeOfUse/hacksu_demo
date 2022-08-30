@@ -90,6 +90,9 @@ class _CharacterSceneState extends State<CharacterScene> {
 
   void causeExplosion([void Function()? stateMutation]) async {
     if (widget.simulatingImperative || exploding) {
+      if (stateMutation != null) {
+        setState(stateMutation);
+      }
       return;
     }
     setState(() {
