@@ -57,7 +57,7 @@ class _CalculatorState extends State<Calculator> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Padding(
-                padding: const EdgeInsets.all(3.0),
+                padding: EdgeInsets.all(3.0),
                 child: Container(
                     decoration: BoxDecoration(
                         border: Border.all(color: Colors.black54),
